@@ -1,0 +1,160 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Owner {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  password     String
+  phone        String?  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationship
+  notifications Notification[]
+}
+
+model Member {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  phone        String
+  password     String
+  joinDate     DateTime @default(now())
+  expiryDate   DateTime
+  status       MembershipStatus @default(ACTIVE)
+  weight       Float?  
+  height       Float?  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  attendance      Attendance[]
+  orders          Order[]
+  notifications   Notification[]
+}
+
+model MembershipPlan {
+  id           Int      @id @default(autoincrement())
+  name         String
+  price        Float
+  durationDays Int
+  description  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relation
+  // (If you want a direct FK on Member, you can add planId there;
+  // or if you want a join table, define a MemberPlan relation. For simplicity, we'll put planId in Member.)
+}
+
+model Attendance {
+  id           Int      @id @default(autoincrement())
+  member       Member   @relation(fields: [memberId], references: [id])
+  memberId     Int
+  checkInTime  DateTime @default(now())
+  checkOutTime DateTime?
+}
+
+model Product {
+  id               Int      @id @default(autoincrement())
+  name             String
+  description      String?
+  price            Float
+  imageUrl         String?
+  quantityInStock  Int
+  threshold        Int      @default(5)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  orderItems OrderItem[]
+}
+
+model Order {
+  id            Int       @id @default(autoincrement())
+  member        Member    @relation(fields: [memberId], references: [id])
+  memberId      Int
+  orderDate     DateTime  @default(now())
+  totalAmount   Float
+  status        OrderStatus @default(PENDING)
+  deliveryAddress String?   // null if pickup
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  // Relations
+  items        OrderItem[]
+  transaction  Transaction?
+}
+
+model OrderItem {
+  id         Int     @id @default(autoincrement())
+  order      Order   @relation(fields: [orderId], references: [id])
+  orderId    Int
+  product    Product @relation(fields: [productId], references: [id])
+  productId  Int
+  quantity   Int
+  unitPrice  Float
+}
+
+model Transaction {
+  id             Int        @id @default(autoincrement())
+  order          Order      @relation(fields: [orderId], references: [id])
+  orderId        Int        @unique
+  paymentDate    DateTime   @default(now())
+  paymentMethod  String     // e.g. “Stripe”, “PayPal”
+  amountPaid     Float
+  paymentStatus  PaymentStatus @default(PAID)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+model Notification {
+  id           Int       @id @default(autoincrement())
+  type         NotificationType
+  content      String
+  target       NotificationTarget
+  owner        Owner?    @relation(fields: [ownerId], references: [id])
+  ownerId      Int?
+  member       Member?   @relation(fields: [memberId], references: [id])
+  memberId     Int?
+  isRead       Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+enum MembershipStatus {
+  ACTIVE
+  EXPIRED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  DELIVERED
+  CANCELED
+}
+
+enum PaymentStatus {
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum NotificationType {
+  SUBSCRIPTION_EXPIRY
+  INVENTORY_LOW
+  ORDER_STATUS
+}
+
+enum NotificationTarget {
+  OWNER
+  MEMBER
+}

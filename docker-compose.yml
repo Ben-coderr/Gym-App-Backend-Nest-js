@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: gym-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: gymdb
+    ports:
+      - '5433:5432' # Map host port 5433 → container port 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U admin']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - gym-network
+
+volumes:
+  postgres_data:
+
+networks:
+  gym-network:
+    driver: bridge
