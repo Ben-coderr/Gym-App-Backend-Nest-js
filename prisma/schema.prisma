@@ -20,6 +20,7 @@ model Owner {
 
   // Relationship
   notifications Notification[]
+  members   Member[]
 }
 
 model Member {
@@ -35,11 +36,14 @@ model Member {
   height       Float?  
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  
 
   // Relations
   attendance      Attendance[]
   orders          Order[]
   notifications   Notification[]
+  ownerId    Int
+  owner      Owner    @relation(fields: [ownerId], references: [id])
 }
 
 model MembershipPlan {
