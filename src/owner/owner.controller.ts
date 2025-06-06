@@ -13,25 +13,25 @@ export class OwnerController {
   constructor(private readonly ownerService: OwnerService) {}
 
   @Get('profile')
-  getProfile(@Req() req: Request) {
+  getProfile(@Req() req) {
     return this.ownerService.getProfile(req.user.id);
   }
 
   @Put('profile')
-  updateProfile(@Req() req: Request, @Body() dto: UpdateOwnerDto) {
+  updateProfile(@Req() req, @Body() dto: UpdateOwnerDto) {
     return this.ownerService.updateProfile(req.user.id, dto);
   }
 
-  @Get('notifications')
-  getNotifications(@Req() req: Request) {
-    return this.ownerService.getNotifications(req.user.id);
-  }
+//   @Get('notifications')
+//   getNotifications(@Req() req) {
+//     return this.ownerService.getNotifications(req.user.id);
+//   }
 
-  @Put('notifications/:id/read')
-  markNotificationAsRead(@Req() req: Request, @Param('id') notificationId: string) {
-    return this.ownerService.markNotificationAsRead(
-      req.user.id,
-      parseInt(notificationId)
-    );
-  }
+//   @Put('notifications/:id/read')
+//   markNotificationAsRead(@Req() req, @Param('id') notificationId: string) {
+//     return this.ownerService.markNotificationAsRead(
+//       req.user.id,
+//       parseInt(notificationId)
+//     );
+//   }
 }

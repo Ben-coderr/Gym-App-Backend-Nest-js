@@ -8,17 +8,17 @@ import { RenewMemberDto } from './dtos/renew-member.dto';
 export class MemberService {
   constructor(private prisma: PrismaService) {}
 
-  async getMembers(ownerId: number, status: string, page: number = 1, limit: number = 10) {
+  async getMembers(ownerId: number, status: string, page = 1, limit = 10) {
     const where: any = { ownerId };
-    
+
     if (status === 'active') {
-      where.expiryDate = { gte: new Date() };
+      where.status = 'ACTIVE';
     } else if (status === 'expired') {
-      where.expiryDate = { lt: new Date() };
+      where.status = 'EXPIRED';
     }
-    
+
     const skip = (page - 1) * limit;
-    
+
     const [members, total] = await Promise.all([
       this.prisma.member.findMany({
         where,
@@ -30,12 +30,13 @@ export class MemberService {
           email: true,
           phone: true,
           expiryDate: true,
+          status: true,
           createdAt: true
         }
       }),
       this.prisma.member.count({ where })
     ]);
-    
+
     return {
       data: members,
       total,
@@ -46,22 +47,15 @@ export class MemberService {
 
   async getMember(ownerId: number, memberId: number) {
     const member = await this.prisma.member.findFirst({
-      where: {
-        id: memberId,
-        ownerId
-      },
+      where: { id: memberId, ownerId },
       include: {
         owner: {
-          select: {
-            id: true,
-            name: true
-          }
+          select: { id: true, name: true }
         }
       }
     });
-    
+
     if (!member) throw new NotFoundException('Member not found');
-    
     return member;
   }
 
@@ -70,7 +64,9 @@ export class MemberService {
       data: {
         ...dto,
         ownerId,
-        expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+        joinDate: new Date(),
+        expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        status: 'ACTIVE'
       }
     });
   }
@@ -79,9 +75,8 @@ export class MemberService {
     const member = await this.prisma.member.findFirst({
       where: { id: memberId, ownerId }
     });
-    
     if (!member) throw new NotFoundException('Member not found');
-    
+
     return this.prisma.member.update({
       where: { id: memberId },
       data: dto
@@ -92,48 +87,39 @@ export class MemberService {
     const member = await this.prisma.member.findFirst({
       where: { id: memberId, ownerId }
     });
-    
     if (!member) throw new NotFoundException('Member not found');
-    
-    // Soft delete implementation
-    return this.prisma.member.update({
-      where: { id: memberId },
-      data: { deletedAt: new Date() }
-    });
+
+    return this.prisma.member.delete({ where: { id: memberId } });
   }
 
   async renewMember(ownerId: number, memberId: number, dto: RenewMemberDto) {
     const member = await this.prisma.member.findFirst({
       where: { id: memberId, ownerId }
     });
-    
     if (!member) throw new NotFoundException('Member not found');
-    
-    const currentExpiry = member.expiryDate > new Date() 
-      ? member.expiryDate 
-      : new Date();
-    
+
+    const currentExpiry = member.expiryDate > new Date() ? member.expiryDate : new Date();
     const newExpiry = new Date(currentExpiry);
     newExpiry.setMonth(newExpiry.getMonth() + dto.months);
-    
+
     return this.prisma.member.update({
       where: { id: memberId },
-      data: { expiryDate: newExpiry }
+      data: { expiryDate: newExpiry, status: 'ACTIVE' }
     });
   }
 
   async getMemberAttendance(memberId: number) {
     return this.prisma.attendance.findMany({
       where: { memberId },
-      orderBy: { date: 'desc' },
-      take: 30 // Last 30 sessions
+      orderBy: { checkInTime: 'desc' },
+      take: 30
     });
   }
 
   async getMemberOrders(memberId: number) {
     return this.prisma.order.findMany({
       where: { memberId },
-      orderBy: { date: 'desc' }
+      orderBy: { orderDate: 'desc' }
     });
   }
 }

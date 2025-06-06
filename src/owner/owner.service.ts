@@ -32,36 +32,36 @@ export class OwnerService {
     });
   }
 
-  async getNotifications(ownerId: number) {
-    return this.prisma.notification.findMany({
-      where: { ownerId },
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        title: true,
-        message: true,
-        read: true,
-        createdAt: true
-      }
-    });
-  }
+//   async getNotifications(ownerId: number) {
+//     return this.prisma.notification.findMany({
+//       where: { ownerId },
+//       orderBy: { createdAt: 'desc' },
+//       select: {
+//         id: true,
+//         title: true,
+//         message: true,
+//         read: true,
+//         createdAt: true
+//       }
+//     });
+//   }
 
-  async markNotificationAsRead(ownerId: number, notificationId: number) {
-    const notification = await this.prisma.notification.findUnique({
-      where: { id: notificationId }
-    });
+//   async markNotificationAsRead(ownerId: number, notificationId: number) {
+//     const notification = await this.prisma.notification.findUnique({
+//       where: { id: notificationId }
+//     });
 
-    if (!notification || notification.ownerId !== ownerId) {
-      throw new NotFoundException('Notification not found');
-    }
+//     if (!notification || notification.ownerId !== ownerId) {
+//       throw new NotFoundException('Notification not found');
+//     }
 
-    return this.prisma.notification.update({
-      where: { id: notificationId },
-      data: { read: true },
-      select: {
-        id: true,
-        read: true
-      }
-    });
-  }
+//     return this.prisma.notification.update({
+//       where: { id: notificationId },
+//       data: { read: true },
+//       select: {
+//         id: true,
+//         read: true
+//       }
+//     });
+//   }
 }

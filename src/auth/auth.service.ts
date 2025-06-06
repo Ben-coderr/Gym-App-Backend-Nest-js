@@ -74,6 +74,7 @@ export class AuthService implements OnModuleInit {
         password: hashedPassword,
         phone: dto.phone,
         expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Default 30 days
+        ownerId: +dto.ownerId, // Assuming ownerId is passed in DTO
         
       },
     });

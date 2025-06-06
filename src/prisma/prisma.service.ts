@@ -1,13 +1,16 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+// prisma/prisma.service.ts
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { softDeleteExtension } from './extensions/soft-delete';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  async onModuleInit() {
-    await this.$connect();
+export class PrismaService extends PrismaClient implements OnModuleInit {
+  constructor() {
+    super();
+    this.$extends(softDeleteExtension);
   }
 
-  async onModuleDestroy() {
-    await this.$disconnect();
+  async onModuleInit() {
+    await this.$connect();
   }
 }

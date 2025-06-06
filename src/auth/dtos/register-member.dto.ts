@@ -13,4 +13,7 @@ export class RegisterMemberDto {
 
   @IsNotEmpty()
   phone: string;
+
+  @IsNotEmpty()
+  ownerId: number;
 }
