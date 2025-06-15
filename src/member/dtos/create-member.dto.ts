@@ -10,6 +10,6 @@ export class CreateMemberDto {
   @MinLength(6)
   password: string;
 
-  @IsPhoneNumber()
+  @IsPhoneNumber('DZ') // Assuming Algeria as the country code
   phone: string;
 }
