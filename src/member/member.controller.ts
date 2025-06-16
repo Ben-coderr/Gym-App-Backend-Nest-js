@@ -11,7 +11,7 @@ import { Request } from 'express';
 import { CreateMemberDto } from './dtos/create-member.dto';
 import { UpdateMemberDto } from './dtos/update-member.dto';
 import { RenewMemberDto } from './dtos/renew-member.dto';
-import { AuthenticatedRequest } from '../interfaces/request.interface';
+
 
 @Controller('members')
 @UseGuards(JwtAuthGuard, RolesGuard)
